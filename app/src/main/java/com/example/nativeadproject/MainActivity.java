@@ -1,10 +1,12 @@
 package com.example.nativeadproject;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
@@ -16,24 +18,64 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
 
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "--->Native Ad";
+    private RecyclerView recyclerView;
+    private MyAdapter myAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+    private ArrayList<ItemClass> myList;
+    private List<NativeAd> nativeAdList;
+
+    private ArrayList<Object> objects;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG, "Native Ad Project runs");
+        Log.d(TAG, "------Native Ad Project runs------");
 
-        TemplateView template = findViewById(R.id.my_template);
+        recyclerView = findViewById(R.id.id_recyclerView);
+        recyclerView.setHasFixedSize(true);
+
+        myList = new ArrayList<>();
+
+        myList.add(new ItemClass(R.drawable.img_01,"James", "James@email.com"));
+        myList.add(new ItemClass(R.drawable.img_02,"Alex", "Alex@email.com"));
+        myList.add(new ItemClass(R.drawable.img_03,"Ian", "Ian@email.com"));
+        myList.add(new ItemClass(R.drawable.img_04,"Mark", "Mark@email.com"));
+        myList.add(new ItemClass(R.drawable.img_05,"Francesco", "Francesco@email.com"));
+        myList.add(new ItemClass(R.drawable.img_06,"Maria", "Maria@email.com"));
+        myList.add(new ItemClass(R.drawable.img_07,"Mohamed", "Mohamed@email.com"));
+
+        layoutManager = new LinearLayoutManager(this);
+        myAdapter= new MyAdapter();
+        myAdapter.setList(myList);
+
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(myAdapter);
+
+
+        nativeAdList = new ArrayList<>();
+
+        createNativeAd();
+
+
+    }
+
+    private void createNativeAd() {
+
+        objects = new ArrayList<>();
+
+        AdClass adClass = new AdClass();
 
         //---> initializing Google Ad SDK
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
             public void onInitializationComplete(InitializationStatus initializationStatus) {
                 Log.d(TAG, "Google SDK Initialized");
-
 
                 AdLoader adLoader = new AdLoader.Builder(MainActivity.this, "ca-app-pub-3940256099942544/2247696110")
 
@@ -48,13 +90,22 @@ public class MainActivity extends AppCompatActivity {
                                     return;
                                 }
 
-                                NativeTemplateStyle styles = new
-                                        NativeTemplateStyle.Builder().build();
+                                nativeAdList.add(nativeAd);
 
+                                if(!adClass.getAdLoader().isLoading()){
 
-                                template.setStyles(styles);
-                                template.setVisibility(View.VISIBLE);
-                                template.setNativeAd(nativeAd);
+                                    objects.add(myList.get(0));
+                                    objects.add(myList.get(1));
+                                    objects.add(myList.get(2));
+                                    objects.add(nativeAdList.get(0));
+                                    objects.add(myList.get(3));
+                                    objects.add(myList.get(4));
+                                    objects.add(myList.get(5));
+                                    objects.add(nativeAdList.get(1));
+                                    objects.add(myList.get(6));
+
+                                    myAdapter.setObject(objects);
+                                }
 
                             }
                         })
@@ -64,7 +115,21 @@ public class MainActivity extends AppCompatActivity {
                             public void onAdFailedToLoad(LoadAdError adError) {
                                 // Handle the failure by logging, altering the UI, and so on.
                                 Log.d(TAG, "Native Ad Failed To Load");
-                                template.setVisibility(View.GONE);
+
+                                new CountDownTimer(10000, 1000) {
+
+                                    @Override
+                                    public void onTick(long millisUntilFinished) {
+                                        Log.d(TAG, "Timer : " + millisUntilFinished / 1000);
+                                    }
+
+                                    @Override
+                                    public void onFinish() {
+                                        Log.d(TAG, "Reloading NativeAd");
+
+                                        createNativeAd();
+                                    }
+                                }.start();
 
                             }
                         })
@@ -72,7 +137,8 @@ public class MainActivity extends AppCompatActivity {
                                 .build())
                         .build();
 
-                adLoader.loadAd(new AdRequest.Builder().build());
+                adLoader.loadAds(new AdRequest.Builder().build(), 2);
+                adClass.setAdLoader(adLoader);
             }
         });
     }

@@ -39,4 +39,11 @@ dependencies {
 
     //---> AdMob
     implementation 'com.google.android.gms:play-services-ads:19.7.0'
+
+    // RecyclerView
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+
+    // CardView
+    implementation 'androidx.cardview:cardview:1.0.0'
+
 }
